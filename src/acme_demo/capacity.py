@@ -12,6 +12,7 @@ def replicas_for_load(requests_per_second: float, per_replica_capacity: float) -
     """
     if per_replica_capacity <= 0:
         raise ValueError("per_replica_capacity must be positive")
-    # SEEDED DEFECT: integer division truncates, so a load that needs a
-    # fractional extra replica is under-provisioned and the workload saturates.
-    return max(1, int(requests_per_second // per_replica_capacity))
+    # Round up: any partial load beyond a whole replica's capacity still
+    # needs an additional replica, or the workload saturates.
+    replicas = -(-requests_per_second // per_replica_capacity)
+    return max(1, int(replicas))
